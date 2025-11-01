@@ -1,0 +1,16 @@
+FROM oven/bun:latest
+
+WORKDIR /app
+
+COPY ./apps/primary-backend/ ./apps/primary-backend
+COPY ./packages/ ./packages
+COPY package* .
+COPY turbo.json .
+COPY bun.lock .
+
+RUN bun install
+RUN bun run db:generate
+
+EXPOSE 9090
+
+CMD ["bun", "run", "primary-backend"]
