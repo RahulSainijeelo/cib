@@ -1,0 +1,30 @@
+{
+  "name": "bolt-mobile-app",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "check-types": "turbo run check-types",
+    "worker": "cd ./apps/worker && bun index.ts",
+    "ws-relayer": "cd ./apps/ws-relayer && bun index.ts",
+    "primary-backend": "npm run db:migrate && cd ./apps/primary-backend && bun index.ts",
+    "db:migrate": "cd ./packages/db && bunx prisma migrate dev && cd ../..",
+    "db:generate": "cd ./packages/db && bunx prisma generate && cd ../..",
+    "frontend": "cd ./apps/frontend && bun run dev"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.0",
+    "turbo": "^2.4.4",
+    "typescript": "5.7.3"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "bun@1.2.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

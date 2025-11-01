@@ -1,0 +1,66 @@
+## Add env variables to the docker compose file
+version: '3'
+
+services:
+  code-server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.code-server
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+  
+  worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.worker
+    ports:
+      - "9091:9091"
+    depends_on:
+      - postgres
+    environment:
+      - ANTHROPIC_API_KEY=
+      - WS_RELAYER_URL=ws://ws-relayer:9093
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
+  
+  ws-relayer:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ws-relayer
+    environment:
+      - WS_RELAYER_URL=ws://ws-relayer:9093
+    depends_on:
+      - postgres
+  
+  primary-backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.primary-backend
+    ports:
+      - "9090:9090"
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
+
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+  
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+      - CLERK_SECRET_KEY=
+
+volumes:
+  postgres_data:
