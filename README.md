@@ -229,9 +229,11 @@ The router component provides intelligent load balancing and session management:
 
 ### Nginx Configuration Example
 
+**Option 1: Using IP Hash for Session Affinity**
+
 ```nginx
 upstream cib_backend {
-    least_conn;
+    ip_hash;  # Routes client to same backend based on IP
     server cib-node-1:8080 max_fails=3 fail_timeout=30s;
     server cib-node-2:8080 max_fails=3 fail_timeout=30s;
     server cib-node-3:8080 max_fails=3 fail_timeout=30s;
@@ -249,10 +251,32 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        
-        # Session affinity using IP hash (standard nginx)
-        # For cookie-based session affinity, use nginx-sticky-module-ng
-        proxy_set_header Cookie $http_cookie;
+    }
+}
+```
+
+**Option 2: Using Least Connections (No Session Affinity)**
+
+```nginx
+upstream cib_backend {
+    least_conn;  # Routes to backend with fewest connections
+    server cib-node-1:8080 max_fails=3 fail_timeout=30s;
+    server cib-node-2:8080 max_fails=3 fail_timeout=30s;
+    server cib-node-3:8080 max_fails=3 fail_timeout=30s;
+}
+
+server {
+    listen 80;
+    server_name cib.example.com;
+
+    location / {
+        proxy_pass http://cib_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 }
 ```
