@@ -250,12 +250,17 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         
-        # Session affinity
+        # Session affinity using IP hash (standard nginx)
+        # For cookie-based session affinity, use nginx-sticky-module-ng
         proxy_set_header Cookie $http_cookie;
-        sticky cookie srv_id expires=1h domain=.example.com path=/;
     }
 }
 ```
+
+**Note**: For advanced cookie-based session affinity, consider using:
+- **Nginx Plus**: Built-in sticky cookie directive
+- **nginx-sticky-module-ng**: Third-party module for open-source Nginx
+- **IP Hash**: Use `ip_hash;` directive in upstream block for simpler session persistence
 
 ### AWS Application Load Balancer
 
